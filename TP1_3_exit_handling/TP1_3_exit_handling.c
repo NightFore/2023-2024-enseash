@@ -59,11 +59,27 @@ void executeCommand(char *input) {
     }
 }
 
+void processUserInput(char *input, ssize_t bytesRead) {
+    // Exit the shell with 'exit' command or Ctrl+D
+    if (strcmp(input, "exit") == 0 | bytesRead == 0) {
+        if (bytesRead == 0) {
+            writeMessage("\n");
+        }
+        writeMessage("Exiting ENSEA Shell.\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    // Execute the user command
+    else {
+        executeCommand(input);
+    }
+}
+
 int main() {
     char input[MAX_INPUT_SIZE];
 
     // Display the welcome message at the beginning
-    writeMessage("Welcome to ENSEA Tiny Shell.\nType 'exit' to quit.\n");
+    writeMessage("Welcome to ENSEA Shell.\nType 'exit' to quit or press Ctrl+D.\n");
 
     // Main loop
     while (1) {
@@ -73,15 +89,8 @@ int main() {
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
-        // Exit with "Bye Bye..." message
-        if (strcmp(input, "exit") == 0) {
-            writeMessage("Bye bye...\n");
-            break;
-        }
-        // Execute the user command
-        else {
-            executeCommand(input);
-        }
+        // Process user input
+        processUserInput(input, bytesRead);
     }
 
     exit(EXIT_SUCCESS);
