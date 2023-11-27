@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_INPUT_SIZE 100
 
@@ -29,8 +30,18 @@ ssize_t readPrompt(char *input, size_t size) {
         exit(EXIT_FAILURE);
     }
 
+    // Remove trailing newline character (\n)
+    input[bytesRead - 1] = '\0';
+
     // Return input
     return bytesRead;
+}
+
+void helloWorld() {
+    const char helloMessage[] = "-----Hello World-----\n";
+
+    // Write the hello message to the standard output
+    write(STDOUT_FILENO, helloMessage, sizeof(helloMessage) - 1);
 }
 
 int main() {
@@ -42,7 +53,12 @@ int main() {
     while (1) {
         // Display the shell prompt and read user input
         displayPrompt();
-        readPrompt(input, sizeof(input));
+        ssize_t bytesRead = readPrompt(input, sizeof(input));
+        
+        // Check if the user entered the "hello" command
+        if (strcmp(input, "hello") == 0) {
+            helloWorld();
+        }
     }
 
     exit(EXIT_SUCCESS);
