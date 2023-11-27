@@ -59,6 +59,10 @@ int main() {
         if (strcmp(input, "hello") == 0) {
             helloWorld();
         }
+        //Exit shell if user entered "exit"
+        if(strcmp(input,"exit") == 0){
+            break;
+        }
     }
 
     exit(EXIT_SUCCESS);
