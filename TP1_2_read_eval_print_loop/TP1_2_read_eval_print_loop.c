@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 #define MAX_INPUT_SIZE 100
 
@@ -37,13 +38,13 @@ void executeCommand(char *input) {
         exit(EXIT_FAILURE);
     }
 
-    // Parent process code
+        // Parent process code
     else if (pid != 0) {
         int status;
         wait(&status);
     }
 
-    // Child process code
+        // Child process code
     else {
         // Execute the command using execl
         // The "/bin/sh" is the path to the system shell
