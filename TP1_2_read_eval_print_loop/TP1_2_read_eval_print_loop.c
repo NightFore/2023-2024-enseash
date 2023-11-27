@@ -64,7 +64,7 @@ void executeCommand(char *input) {
     else {
         printf("zeaea %d\n", getpid());
         execl("/bin/ls", "ls", "-l", "*.c", (char *) NULL);
-        
+
         // The code below should not be executed if execl is successful
         const char errorExecMessage[] = "Error: executeCommand.\n"
                                         "This line must not be printed";
@@ -84,13 +84,17 @@ int main() {
         displayPrompt();
         ssize_t bytesRead = readPrompt(input, sizeof(input));
         
+
+        // Exit shell if user entered "exit"
+        if (strcmp(input, "exit") == 0) {
+            break;
+        }
         // Check if the user entered the "hello" command
-        if (strcmp(input, "hello") == 0) {
+        else if (strcmp(input, "hello") == 0) {
             helloWorld();
         }
         else {
             executeCommand(input);
-        }
     }
 
     exit(EXIT_SUCCESS);
