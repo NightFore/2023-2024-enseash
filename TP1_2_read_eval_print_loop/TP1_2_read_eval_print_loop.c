@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define MAX_INPUT_SIZE 100
 
@@ -44,6 +45,34 @@ void helloWorld() {
     write(STDOUT_FILENO, helloMessage, sizeof(helloMessage) - 1);
 }
 
+void executeCommand(char *input) {
+    pid_t pid = fork();
+
+    // Check for errors
+    if (pid == 0) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    // Parent code
+    else if (pid != 0) {
+        int status;
+        wait(&status);
+    }
+
+    // Child code
+    else {
+        printf("zeaea %d\n", getpid());
+        execl("/bin/ls", "ls", "-l", "*.c", (char *) NULL);
+        
+        // The code below should not be executed if execl is successful
+        const char errorExecMessage[] = "Error: executeCommand.\n"
+                                        "This line must not be printed";
+        write(STDOUT_FILENO, errorExecMessage, sizeof(errorExecMessage) - 1);
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main() {
     char input[MAX_INPUT_SIZE];
 
@@ -58,6 +87,9 @@ int main() {
         // Check if the user entered the "hello" command
         if (strcmp(input, "hello") == 0) {
             helloWorld();
+        }
+        else {
+            executeCommand(input);
         }
     }
 
