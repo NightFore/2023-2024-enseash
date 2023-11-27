@@ -24,7 +24,7 @@ ssize_t readPrompt(char *input, size_t size) {
     // Remove trailing newline character (\n)
     input[bytesRead - 1] = '\0';
 
-    // Return input
+    // Return the number of bytes read
     return bytesRead;
 }
 
@@ -38,15 +38,22 @@ void executeCommand(char *input) {
         exit(EXIT_FAILURE);
     }
 
-        // Parent code
+    // Parent process code
     else if (pid != 0) {
         int status;
         wait(&status);
     }
 
-        // Child code
+    // Child process code
     else {
-        // The code below should not be executed if execl is successful
+        // Execute the command using execl
+        // The "/bin/sh" is the path to the system shell
+        // The "sh" is the name of the shell
+        // The "-c" indicates that the next argument is a command string
+        // The input is the command string to be executed
+        execl("/bin/sh", "sh", "-c", input, (char *)NULL);
+
+        // If execl fails, print an error message
         writeMessage("Error: executeCommand - This line must not be printed.\n");
         exit(EXIT_FAILURE);
     }
@@ -66,12 +73,13 @@ int main() {
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
-        // Execute the user command
-        executeCommand(input);
-
         // Exit with "Bye Bye..." message
         if (strcmp(input, "exit") == 0) {
-            writeMessage("Bye Bye...");
+            writeMessage("Bye bye...\n");
+            break;
+        }
+        // Execute the user command
+        else {
             executeCommand(input);
         }
     }
