@@ -1,3 +1,5 @@
+// TP1_5_measure_execution_time.c
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +20,7 @@ ssize_t readPrompt(char *input, size_t size) {
 
     // Check for errors during input reading
     if (bytesRead < 0) {
-        writeMessage("Error: readPrompt.\n");
+        writeMessage("Error: readPrompt\n");
         exit(EXIT_FAILURE);
     }
 
@@ -47,12 +49,11 @@ void executeCommand(char *input) {
 
     // Child process code
     else {
-        // Execute the command using execl
-        // The "/bin/sh" is the path to the system shell
-        // The "sh" is the name of the shell
-        // The "-c" indicates that the next argument is a command string
-        // The input is the command string to be executed
-        execl("/bin/sh", "sh", "-c", input, (char *)NULL);
+        // Execute the command using execlp:
+        // - Path to the executable
+        // - Program name
+        // - (char*) NULL marks the end of the argument list
+        execlp(input, input, (char*) NULL);
 
         // If execl fails, print an error message
         writeMessage("Error: executeCommand - This line must not be printed.\n");

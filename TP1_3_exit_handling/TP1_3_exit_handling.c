@@ -1,3 +1,12 @@
+// TP1_3_exit_handling.c
+
+/*
+    Changes from the previous code:
+
+    - Added a new function processUserInput to handle 'exit' command and Ctrl+D.
+    - Modified the main loop to call processUserInput instead of executeCommand directly.
+*/
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,11 +22,11 @@ void writeMessage(const char *message) {
 
 ssize_t readPrompt(char *input, size_t size) {
     // Read input from standard input
-    ssize_t bytesRead = read(STDIN_FILENO, input, sizeof(input));
+    ssize_t bytesRead = read(STDIN_FILENO, input, size);
 
     // Check for errors during input reading
     if (bytesRead < 0) {
-        writeMessage("Error: readPrompt.\n");
+        writeMessage("Error: readPrompt\n");
         exit(EXIT_FAILURE);
     }
 
@@ -46,12 +55,11 @@ void executeCommand(char *input) {
 
     // Child process code
     else {
-        // Execute the command using execl
-        // The "/bin/sh" is the path to the system shell
-        // The "sh" is the name of the shell
-        // The "-c" indicates that the next argument is a command string
-        // The input is the command string to be executed
-        execl("/bin/sh", "sh", "-c", input, (char *)NULL);
+        // Execute the command using execlp:
+        // - Path to the executable
+        // - Program name
+        // - (char*) NULL marks the end of the argument list
+        execlp(input, input, (char*) NULL);
 
         // If execl fails, print an error message
         writeMessage("Error: executeCommand - This line must not be printed.\n");
@@ -61,7 +69,7 @@ void executeCommand(char *input) {
 
 void processUserInput(char *input, ssize_t bytesRead) {
     // Exit the shell with 'exit' command or Ctrl+D
-    if (strcmp(input, "exit") == 0 | bytesRead == 0) {
+    if (strcmp(input, "exit") == 0 || bytesRead == 0) {
         if (bytesRead == 0) {
             writeMessage("\n");
         }

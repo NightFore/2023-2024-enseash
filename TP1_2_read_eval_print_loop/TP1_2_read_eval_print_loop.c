@@ -1,3 +1,17 @@
+// TP1_2_read_eval_print_loop.c
+
+/*
+    Changes from the previous code:
+
+    - Added header files (stdlib.h, string.h, stdio.h, sys/wait.h).
+    - Defined a constant MAX_INPUT_SIZE to specify the maximum size for user input.
+    - Created new functions: writeMessage, readPrompt, and executeCommand.
+    - In the main function:
+        - Initialized a character array `input` to store user input.
+        - Used writeMessage to display the welcome message.
+        - Implemented a main loop for the shell to continuously read user input and execute commands.
+*/
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,11 +27,11 @@ void writeMessage(const char *message) {
 
 ssize_t readPrompt(char *input, size_t size) {
     // Read input from standard input
-    ssize_t bytesRead = read(STDIN_FILENO, input, sizeof(input));
+    ssize_t bytesRead = read(STDIN_FILENO, input, size);
 
     // Check for errors during input reading
     if (bytesRead < 0) {
-        writeMessage("Error: readPrompt.\n");
+        writeMessage("Error: readPrompt\n");
         exit(EXIT_FAILURE);
     }
 
@@ -46,12 +60,11 @@ void executeCommand(char *input) {
 
     // Child process code
     else {
-        // Execute the command using execl
-        // The "/bin/sh" is the path to the system shell
-        // The "sh" is the name of the shell
-        // The "-c" indicates that the next argument is a command string
-        // The input is the command string to be executed
-        execl("/bin/sh", "sh", "-c", input, (char *)NULL);
+        // Execute the command using execlp:
+        // - Path to the executable
+        // - Program name
+        // - (char*) NULL marks the end of the argument list
+        execlp(input, input, (char*) NULL);
 
         // If execl fails, print an error message
         writeMessage("Error: executeCommand - This line must not be printed.\n");
