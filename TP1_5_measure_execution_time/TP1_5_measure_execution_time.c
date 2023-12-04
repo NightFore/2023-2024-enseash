@@ -14,7 +14,7 @@ void writeMessage(const char *message) {
 
 ssize_t readPrompt(char *input, size_t size) {
     // Read input from standard input
-    ssize_t bytesRead = read(STDIN_FILENO, input, sizeof(input));
+    ssize_t bytesRead = read(STDIN_FILENO, input, size);
 
     // Check for errors during input reading
     if (bytesRead < 0) {
