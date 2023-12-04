@@ -82,18 +82,19 @@ void executeCommand(char *input) {
         exit(EXIT_FAILURE);
     }
 
-    // Parent process code
+    // Parent process
     else if (pid != 0) {
+        // Parent waits for the child process
         int status;
         wait(&status);
     }
 
-    // Child process code
+    // Child process
     else {
-        // Execute the command
+        // Execute the command (without arguments)
         execlp(input, input, (char*) NULL);
 
-        // If execl fails, print an error message
+        // If execlp fails, print an error message
         perror("Error: executeCommand\nexecvp");
         exit(EXIT_FAILURE);
     }

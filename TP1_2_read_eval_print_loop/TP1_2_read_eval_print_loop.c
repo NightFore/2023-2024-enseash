@@ -72,19 +72,20 @@ void executeCommand(char *input) {
 
     // Parent process
     else if (pid != 0) {
+        // Parent waits for the child process
         int status;
         wait(&status);
     }
 
     // Child process
     else {
-        // Execute the command using execlp:
+        // Execute the command (without arguments):
         // - Path to the executable
         // - Program name
         // - (char*) NULL marks the end of the argument list
         execlp(input, input, (char*) NULL);
 
-        // If execl fails, print an error message
+        // If execlp fails, print an error message
         perror("Error: executeCommand\nexecvp");
         exit(EXIT_FAILURE);
     }

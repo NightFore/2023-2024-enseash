@@ -191,7 +191,7 @@ void handleRedirection(char *args[], size_t argCount) {
 
 
 
-// --------------------- Display status --------------------- //
+// --------------------- Display Status --------------------- //
 void displayPromptStatus() {
     int status;
 

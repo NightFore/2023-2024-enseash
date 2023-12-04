@@ -1,12 +1,5 @@
 // TP1_4_display_code.c
 
-/*
-    Changes from the previous code:
-
-    - Added two new functions: writeExitOrSignalMessage and displayPromptStatus.
-    - Modified the main loop to call displayPromptStatus after processing user input.
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,17 +10,17 @@
 
 // Helper Functions
 void writeMessage(const char *message);
-void writeExitOrSignalMessage(char *command, int status);
+void writeStatusMessage(char *command, int status);
 
 // Read Input
 ssize_t readPrompt(char *input, size_t size);
 
 // Process Input
-void processUserInput(char *input, ssize_t bytesRead);
-void executeCommand(char *input);
+void processUserInput(char *input, ssize_t bytesRead, int *status);
+void executeCommand(char *input, int *status);
 
 // Display Status
-void displayPromptStatus();
+void displayPromptStatus(int status);
 
 
 
@@ -37,8 +30,8 @@ void writeMessage(const char *message) {
     write(STDOUT_FILENO, message, strlen(message));
 }
 
-void writeExitOrSignalMessage(char *command, int status) {
-    // Create a prompt message with the specified command and status
+void writeStatusMessage(char *command, int status) {
+    // Create a prompt message with the specified command, status and execution time
     char promptMessage[100];
     snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d] %% ", command, status);
     writeMessage(promptMessage);
@@ -67,7 +60,7 @@ ssize_t readPrompt(char *input, size_t size) {
 
 
 // --------------------- Process Input --------------------- //
-void processUserInput(char *input, ssize_t bytesRead) {
+void processUserInput(char *input, ssize_t bytesRead, int *status) {
     // Exit the shell with 'exit' command or Ctrl+D
     if (strcmp(input, "exit") == 0 || bytesRead == 0) {
         if (bytesRead == 0) {
@@ -79,11 +72,11 @@ void processUserInput(char *input, ssize_t bytesRead) {
 
     // Execute the user command
     else {
-        executeCommand(input);
+        executeCommand(input, status);
     }
 }
 
-void executeCommand(char *input) {
+void executeCommand(char *input, int *status) {
     // Create a child process
     pid_t pid = fork();
 
@@ -93,18 +86,18 @@ void executeCommand(char *input) {
         exit(EXIT_FAILURE);
     }
 
-    // Parent process code
+    // Parent process
     else if (pid != 0) {
-        int status;
-        wait(&status);
+        // Parent waits for the child process
+        wait(status);
     }
 
-    // Child process code
+    // Child process
     else {
-        // Execute the command
+        // Execute the command (without arguments)
         execlp(input, input, (char*) NULL);
 
-        // If execl fails, print an error message
+        // If execlp fails, print an error message
         perror("Error: executeCommand\nexecvp");
         exit(EXIT_FAILURE);
     }
@@ -112,20 +105,15 @@ void executeCommand(char *input) {
 
 
 
-// --------------------- Display status --------------------- //
-void displayPromptStatus() {
-    int status;
-
-    // Wait for the child process to finish
-    wait(&status);
-
+// --------------------- Display Status --------------------- //
+void displayPromptStatus(int status) {
     // Check if the command was successful
     if (WIFEXITED(status)) {
-        // Display exit status in the prompt
-        writeExitOrSignalMessage("exit", WEXITSTATUS(status));
+        // If the command exited normally, display exit status in the prompt
+        writeStatusMessage("exit", WEXITSTATUS(status));
     } else if (WIFSIGNALED(status)) {
-        // Display signal information in the prompt
-        writeExitOrSignalMessage("sign", WTERMSIG(status));
+        // If the command was terminated by a signal, display signal information in the prompt
+        writeStatusMessage("sign", WTERMSIG(status));
     }
 }
 
@@ -134,6 +122,7 @@ void displayPromptStatus() {
 // --------------------- Main --------------------- //
 int main() {
     char input[MAX_INPUT_SIZE];
+    int status;
 
     // Display the welcome message at launch
     writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
@@ -146,11 +135,11 @@ int main() {
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
-        // Process user input
-        processUserInput(input, bytesRead);
+        // Process user input and execute the command
+        processUserInput(input, bytesRead, &status);
 
         // Display prompt status
-        displayPromptStatus();
+        displayPromptStatus(status);
     }
 
     exit(EXIT_SUCCESS);
