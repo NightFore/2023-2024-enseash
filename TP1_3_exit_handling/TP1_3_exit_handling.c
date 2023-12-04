@@ -87,7 +87,7 @@ int main() {
     char input[MAX_INPUT_SIZE];
 
     // Display the welcome message at the beginning
-    writeMessage("Welcome to ENSEA Shell.\nType 'exit' to quit or press Ctrl+D.\n");
+    writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
 
     // Main loop
     while (1) {

@@ -130,7 +130,7 @@ int main() {
     pid_t userCommandPID;
 
     // Display the welcome message at the beginning
-    writeMessage("Welcome to ENSEA Shell.\nType 'exit' to quit or press Ctrl+D.\n");
+    writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
 
     // Display the shell prompt
     writeMessage("enseash % ");
