@@ -28,7 +28,3 @@
 ## Problems Encountered
 
 ## Possible Improvements
-
-## Contributors
-- PHETSINORATH Frédéric
-- DOAN Alexis
