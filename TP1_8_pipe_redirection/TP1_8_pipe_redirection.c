@@ -1,11 +1,11 @@
 // TP1_8_pipe_redirection.c
 
-#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <sys/wait.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #define MAX_INPUT_SIZE 100
 #define MAX_ARGS 10
@@ -29,7 +29,7 @@ void displayPromptStatus();
 
 
 
-// -------------------- Helper Functions --------------------
+// -------------------- Helper Functions -------------------- //
 void writeMessage(const char *message) {
     // Write the message to the standard output
     write(STDOUT_FILENO, message, strlen(message));
@@ -39,14 +39,12 @@ void writeExitOrSignalMessage(char *command, int status) {
     // Create a prompt message with the specified command and status
     char promptMessage[100];
     snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d] %% ", command, status);
-
-    // Write the prompt message to the standard output
     writeMessage(promptMessage);
 }
 
 
 
-// --------------------- Read Input ---------------------
+// --------------------- Read Input --------------------- //
 ssize_t readPrompt(char *input, size_t size) {
     // Read input from standard input
     ssize_t bytesRead = read(STDIN_FILENO, input, size);
@@ -66,7 +64,7 @@ ssize_t readPrompt(char *input, size_t size) {
 
 
 
-// --------------------- Process Input ---------------------
+// --------------------- Process Input --------------------- //
 void processUserInput(char *input, ssize_t bytesRead) {
     // Exit the shell with 'exit' command or Ctrl+D
     if (strcmp(input, "exit") == 0 || bytesRead == 0) {
@@ -270,7 +268,7 @@ void handlePipe(char *args[], size_t argCount) {
 
 
 
-// --------------------- Display status ---------------------
+// --------------------- Display status --------------------- //
 void displayPromptStatus() {
     int status;
 
@@ -289,11 +287,11 @@ void displayPromptStatus() {
 
 
 
-// --------------------- Main ---------------------
+// --------------------- Main --------------------- //
 int main() {
     char input[MAX_INPUT_SIZE];
 
-    // Display the welcome message at the beginning
+    // Display the welcome message at launch
     writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
 
     // Display the shell prompt
