@@ -225,7 +225,7 @@ void handlePipe(char *args[], size_t argCount) {
                 close(pipefd[0]);
 
                 // Redirect standard output to the write end of the pipe
-                if (dup2(pipefd[1], STDOUT_FILENO)) {
+                if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
                     perror("Error: handlePipe (firstCommand)\ndup2");
                     close(pipefd[1]);
                     exit(EXIT_FAILURE);
@@ -248,7 +248,7 @@ void handlePipe(char *args[], size_t argCount) {
                 close(pipefd[1]);
 
                 // Redirect standard input to the read end of the pipe
-                if (dup2(pipefd[0], STDIN_FILENO)) {
+                if (dup2(pipefd[0], STDIN_FILENO) == -1) {
                     perror("Error: handlePipe (secondCommand)\ndup2");
                     close(pipefd[0]);
                     exit(EXIT_FAILURE);
