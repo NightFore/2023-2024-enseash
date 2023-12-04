@@ -71,7 +71,7 @@ void processUserInput(char *input, ssize_t bytesRead, int *status, long *executi
         exit(EXIT_SUCCESS);
     }
 
-    // Execute the user command
+    // User command
     else {
         // Initialize timestamps (time.h)
         struct timespec start_time, end_time;
@@ -82,7 +82,7 @@ void processUserInput(char *input, ssize_t bytesRead, int *status, long *executi
             exit(EXIT_FAILURE);
         }
         
-        // Execute the user command and store the process ID in userCommandPID
+        // Execute the user command and wait for completion
         executeCommand(input, status);
 
         // Get the end time

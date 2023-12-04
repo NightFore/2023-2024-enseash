@@ -70,8 +70,9 @@ void processUserInput(char *input, ssize_t bytesRead, int *status) {
         exit(EXIT_SUCCESS);
     }
 
-    // Execute the user command
+    // User command
     else {
+        // Execute the user command and wait for completion
         executeCommand(input, status);
     }
 }
