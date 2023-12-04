@@ -35,7 +35,7 @@ void executeCommand(char *input,pid_t *childPID) {
     // Create a child process
     pid_t pid = fork();
 
-    // Check for errors
+    // Check for errors during fork
     if (pid == -1) {
         perror("fork");
         exit(EXIT_FAILURE);
@@ -49,7 +49,7 @@ void executeCommand(char *input,pid_t *childPID) {
 
     // Child process code
     else {
-        // Get the PID value
+        // Get the PID value in a pointer for displayPromptStatus()
         *childPID = getpid();
         // Execute the command using execlp:
         // - Path to the executable
@@ -64,10 +64,11 @@ void executeCommand(char *input,pid_t *childPID) {
 
 }
 
-void processUserInputAndExecutionTimeMeasurement(char *input, ssize_t bytesRead, long *executionTime,pid_t *userCommandPID) {
+void executeCommandAndMeasureTime(char *input, ssize_t bytesRead, long *executionTime,pid_t *userCommandPID) {
+    // Declare timespec structs (defined in time.h) to store start and end timestamps
     struct timespec start, end;
 
-    // Exit the shell with 'exit' command or Ctrl+D
+    // Check if the user wants to exit the shell with 'exit' command or Ctrl+D
     if (strcmp(input, "exit") == 0 || bytesRead == 0) {
         if (bytesRead == 0) {
             writeMessage("\n");
@@ -76,27 +77,27 @@ void processUserInputAndExecutionTimeMeasurement(char *input, ssize_t bytesRead,
         exit(EXIT_SUCCESS);
     }
 
-    // Execute the user command and measure its duration by timestamping
+    // If the user did not request to exit, execute the entered command and measure its duration with timestamps
     else {
-        // Get start time
+        // Get start time using Linux monotonic time
         if (clock_gettime(CLOCK_MONOTONIC, &start) != 0) {
             writeMessage("Error: clock_gettime\nenseash %");
         }
-        // Need to get the user command PID
+        // Execute the user command and store the process ID in userCommandPID
         executeCommand(input,userCommandPID);
-        // Get end time
+        // Get end time using Linux monotonic time
         if (clock_gettime(CLOCK_MONOTONIC, &end) != 0) {
             writeMessage("Error: clock_gettime\nenseash %");
         }
-        // Calculate duration in milliseconds
+        // Calculate and store the command duration in milliseconds
         long seconds = end.tv_sec - start.tv_sec;
         long nanoseconds = end.tv_nsec - start.tv_nsec;
         *executionTime = seconds * 1000 + nanoseconds / 1000000;
     }
 }
 
-void writeExitOrSignalMessage(char *command, int status,long executionTime) {
-    // Create a prompt message with the specified command and status
+void writeCommandExecutionStatus(char *command, int status,long executionTime) {
+    // Create a prompt message with the specified command, status and execution time
     char promptMessage[100];
     snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d|%ldms] %% ", command, status,executionTime);
 
@@ -108,16 +109,16 @@ void displayPromptStatus(long executionTime,pid_t userCommandPID) {
     int status;
 
     // Wait for the child process from the user command to finish
-//    wait(&status);
+    // Utilize waitpid() to ensure the correct handling of the desired child process
     waitpid(userCommandPID,&status,0);
 
     // Check if the command was successful
     if (WIFEXITED(status)) {
-        // Display exit status in the prompt
-        writeExitOrSignalMessage("exit", WEXITSTATUS(status),executionTime);
+        // If the command exited normally, display exit status in the prompt
+        writeCommandExecutionStatus("exit", WEXITSTATUS(status),executionTime);
     } else if (WIFSIGNALED(status)) {
-        // Display signal information in the prompt
-        writeExitOrSignalMessage("sign", WTERMSIG(status),executionTime);
+        // If the command was terminated by a signal, display signal information in the prompt
+        writeCommandExecutionStatus("sign", WTERMSIG(status),executionTime);
     } else {
         // Display error prompt
         writeMessage("Error: displayPromptStatus\nenseash % ");
@@ -141,7 +142,7 @@ int main() {
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
         // Process user input and time measurement
-        processUserInputAndExecutionTimeMeasurement(input, bytesRead,&executionTime,&userCommandPID);
+        executeCommandAndMeasureTime(input, bytesRead,&executionTime,&userCommandPID);
 
         // Display prompt status and execution time
         displayPromptStatus(executionTime,userCommandPID);
