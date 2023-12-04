@@ -9,27 +9,21 @@
 - Management of the shell output with the command `exit` or with `<ctrl>+d`
 - Display the return code/signal and execution time of the previous command in the prompt
 - Execution of complex commands (with arguments)
-- Management of redirections to `stdin` and `stdout` with `'<'` and `'>'`
-- Management of pipe redirection with `'|'`
-- Return to the prompt immediatly with `'&'` (execution of programs in the background)
+- Management of redirections to `stdin` and `stdout` with `<` and `>`
+- Management of pipe redirection with `|`
+- Return to the prompt immediatly with `&` (execution of programs in the background)
 
-'''markdown
 ## Project Structure
-- 'TP1_**question number and description**/' : Contain the .c file and the executing program
-'''
+- 'TP1_**_question number and description_**/' : Contain the .c file and the executing program
 
 ## Operationg Instructions
 1. Clone this repository on your machine
 2. Place yourself in the right directory
 3. If the executing program is missing or not compatible :
-   - Compile the program (with gcc for example) :
-'''bash
-gcc program_name.c -o executing_program_name
-'''
-   - Execute program :
-'''bash
-./executing_program_name
-'''
+   - Compile the program (with gcc for example) : gcc `program_name.c -o executing_program_name`
+   - Execute program : `./executing_program_name`
+
+## Results
 
 ## Problems Encountered
 
