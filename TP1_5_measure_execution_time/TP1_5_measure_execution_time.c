@@ -31,7 +31,7 @@ ssize_t readPrompt(char *input, size_t size) {
     return bytesRead;
 }
 
-void executeCommand(char *input) {
+void executeCommand(char *input,pid_t *childPID) {
     // Create a child process
     pid_t pid = fork();
 
@@ -49,6 +49,8 @@ void executeCommand(char *input) {
 
     // Child process code
     else {
+        // Get the PID value
+        *childPID = getpid();
         // Execute the command using execlp:
         // - Path to the executable
         // - Program name
@@ -59,6 +61,7 @@ void executeCommand(char *input) {
         writeMessage("Error: executeCommand - This line must not be printed.\n");
         exit(EXIT_FAILURE);
     }
+
 }
 
 void processUserInputAndExecutionTimeMeasurement(char *input, ssize_t bytesRead, long *executionTime,pid_t *userCommandPID) {
@@ -80,14 +83,7 @@ void processUserInputAndExecutionTimeMeasurement(char *input, ssize_t bytesRead,
             writeMessage("Error: clock_gettime\nenseash %");
         }
         // Need to get the user command PID
-        *userCommandPID = fork();
-        if (*userCommandPID == -1) {
-            perror("Error: fork");
-            exit(EXIT_FAILURE);
-        } else if (*userCommandPID == 0) {
-            executeCommand(input);
-        }
-
+        executeCommand(input,userCommandPID);
         // Get end time
         if (clock_gettime(CLOCK_MONOTONIC, &end) != 0) {
             writeMessage("Error: clock_gettime\nenseash %");
@@ -112,10 +108,8 @@ void displayPromptStatus(long executionTime,pid_t userCommandPID) {
     int status;
 
     // Wait for the child process from the user command to finish
-    if (waitpid(userCommandPID,&status,0) == -1) {
-        perror("Error: waitpid");
-        exit(EXIT_FAILURE);
-    }
+//    wait(&status);
+    waitpid(userCommandPID,&status,0);
 
     // Check if the command was successful
     if (WIFEXITED(status)) {
