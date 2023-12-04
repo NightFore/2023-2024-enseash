@@ -2,6 +2,12 @@
 
 #include <unistd.h>
 
+// Helper Functions
+void displayWelcomeMessage();
+
+
+
+// -------------------- Helper Functions -------------------- //
 void displayWelcomeMessage() {
     const char welcomeMessage[] = "Welcome to ENSEA Tiny Shell.\n"
                                   "Type 'exit' to quit.\n"
@@ -11,6 +17,9 @@ void displayWelcomeMessage() {
     write(STDOUT_FILENO, welcomeMessage, sizeof(welcomeMessage) - 1);
 }
 
+
+
+// --------------------- Main --------------------- //
 int main() {
     displayWelcomeMessage();
 

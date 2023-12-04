@@ -1,32 +1,52 @@
 // TP1_4_display_code.c
 
-/*
-    Changes from the previous code:
-
-    - Added two new functions: writeExitOrSignalMessage and displayPromptStatus.
-    - Modified the main loop to call displayPromptStatus after processing user input.
-*/
-
-#include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #define MAX_INPUT_SIZE 100
 
+// Helper Functions
+void writeMessage(const char *message);
+void writeStatusMessage(char *command, int status);
+
+// Read Input
+ssize_t readPrompt(char *input, size_t size);
+
+// Process Input
+void processUserInput(char *input, ssize_t bytesRead, int *status);
+void executeCommand(char *input, int *status);
+
+// Display Status
+void displayPromptStatus(int status);
+
+
+
+// -------------------- Helper Functions -------------------- //
 void writeMessage(const char *message) {
     // Write the message to the standard output
     write(STDOUT_FILENO, message, strlen(message));
 }
 
+void writeStatusMessage(char *command, int status) {
+    // Create a prompt message with the specified command, status and execution time
+    char promptMessage[100];
+    snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d] %% ", command, status);
+    writeMessage(promptMessage);
+}
+
+
+
+// --------------------- Read Input --------------------- //
 ssize_t readPrompt(char *input, size_t size) {
     // Read input from standard input
     ssize_t bytesRead = read(STDIN_FILENO, input, size);
 
     // Check for errors during input reading
     if (bytesRead < 0) {
-        writeMessage("Error: readPrompt\n");
+        perror("Error: readPrompt\nread");
         exit(EXIT_FAILURE);
     }
 
@@ -37,37 +57,10 @@ ssize_t readPrompt(char *input, size_t size) {
     return bytesRead;
 }
 
-void executeCommand(char *input) {
-    // Create a child process
-    pid_t pid = fork();
 
-    // Check for errors
-    if (pid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
 
-    // Parent process code
-    else if (pid != 0) {
-        int status;
-        wait(&status);
-    }
-
-    // Child process code
-    else {
-        // Execute the command using execlp:
-        // - Path to the executable
-        // - Program name
-        // - (char*) NULL marks the end of the argument list
-        execlp(input, input, (char*) NULL);
-
-        // If execl fails, print an error message
-        writeMessage("Error: executeCommand - This line must not be printed.\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void processUserInput(char *input, ssize_t bytesRead) {
+// --------------------- Process Input --------------------- //
+void processUserInput(char *input, ssize_t bytesRead, int *status) {
     // Exit the shell with 'exit' command or Ctrl+D
     if (strcmp(input, "exit") == 0 || bytesRead == 0) {
         if (bytesRead == 0) {
@@ -77,44 +70,62 @@ void processUserInput(char *input, ssize_t bytesRead) {
         exit(EXIT_SUCCESS);
     }
 
-    // Execute the user command
+    // User command
     else {
-        executeCommand(input);
+        // Execute the user command and wait for completion
+        executeCommand(input, status);
     }
 }
 
-void writeExitOrSignalMessage(char *command, int status) {
-    // Create a prompt message with the specified command and status
-    char promptMessage[100];
-    snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d] %% ", command, status);
+void executeCommand(char *input, int *status) {
+    // Create a child process
+    pid_t pid = fork();
 
-    // Write the prompt message to the standard output
-    writeMessage(promptMessage);
+    // Check for errors
+    if (pid == -1) {
+        perror("Error: executeCommand\nfork");
+        exit(EXIT_FAILURE);
+    }
+
+    // Parent process
+    else if (pid != 0) {
+        // Parent waits for the child process
+        wait(status);
+    }
+
+    // Child process
+    else {
+        // Execute the command (without arguments)
+        execlp(input, input, (char*) NULL);
+
+        // If execlp fails, print an error message
+        perror("Error: executeCommand\nexecvp");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void displayPromptStatus() {
-    int status;
 
-    // Wait for the child process to finish
-    wait(&status);
 
+// --------------------- Display Status --------------------- //
+void displayPromptStatus(int status) {
     // Check if the command was successful
     if (WIFEXITED(status)) {
-        // Display exit status in the prompt
-        writeExitOrSignalMessage("exit", WEXITSTATUS(status));
+        // If the command exited normally, display exit status in the prompt
+        writeStatusMessage("exit", WEXITSTATUS(status));
     } else if (WIFSIGNALED(status)) {
-        // Display signal information in the prompt
-        writeExitOrSignalMessage("sign", WTERMSIG(status));
-    } else {
-        // Display error prompt
-        writeMessage("Error: displayPromptStatus\nenseash % ");
+        // If the command was terminated by a signal, display signal information in the prompt
+        writeStatusMessage("sign", WTERMSIG(status));
     }
 }
 
+
+
+// --------------------- Main --------------------- //
 int main() {
     char input[MAX_INPUT_SIZE];
+    int status;
 
-    // Display the welcome message at the beginning
+    // Display the welcome message at launch
     writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
 
     // Display the shell prompt
@@ -125,11 +136,11 @@ int main() {
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
-        // Process user input
-        processUserInput(input, bytesRead);
+        // Process user input and execute the command
+        processUserInput(input, bytesRead, &status);
 
         // Display prompt status
-        displayPromptStatus();
+        displayPromptStatus(status);
     }
 
     exit(EXIT_SUCCESS);

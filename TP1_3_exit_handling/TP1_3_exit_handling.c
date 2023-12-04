@@ -7,26 +7,42 @@
     - Modified the main loop to call processUserInput instead of executeCommand directly.
 */
 
-#include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #define MAX_INPUT_SIZE 100
 
+// Helper Functions
+void writeMessage(const char *message);
+
+// Read Input
+ssize_t readPrompt(char *input, size_t size);
+
+// Process Input
+void processUserInput(char *input, ssize_t bytesRead);
+void executeCommand(char *input);
+
+
+
+// -------------------- Helper Functions -------------------- //
 void writeMessage(const char *message) {
     // Write the message to the standard output
     write(STDOUT_FILENO, message, strlen(message));
 }
 
+
+
+// --------------------- Read Input --------------------- //
 ssize_t readPrompt(char *input, size_t size) {
     // Read input from standard input
     ssize_t bytesRead = read(STDIN_FILENO, input, size);
 
     // Check for errors during input reading
     if (bytesRead < 0) {
-        writeMessage("Error: readPrompt\n");
+        perror("Error: readPrompt\nread");
         exit(EXIT_FAILURE);
     }
 
@@ -37,36 +53,9 @@ ssize_t readPrompt(char *input, size_t size) {
     return bytesRead;
 }
 
-void executeCommand(char *input) {
-    // Create a child process
-    pid_t pid = fork();
 
-    // Check for errors
-    if (pid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
 
-    // Parent process code
-    else if (pid != 0) {
-        int status;
-        wait(&status);
-    }
-
-    // Child process code
-    else {
-        // Execute the command using execlp:
-        // - Path to the executable
-        // - Program name
-        // - (char*) NULL marks the end of the argument list
-        execlp(input, input, (char*) NULL);
-
-        // If execl fails, print an error message
-        writeMessage("Error: executeCommand - This line must not be printed.\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
+// --------------------- Process Input --------------------- //
 void processUserInput(char *input, ssize_t bytesRead) {
     // Exit the shell with 'exit' command or Ctrl+D
     if (strcmp(input, "exit") == 0 || bytesRead == 0) {
@@ -77,16 +66,48 @@ void processUserInput(char *input, ssize_t bytesRead) {
         exit(EXIT_SUCCESS);
     }
 
-    // Execute the user command
+    // User command
     else {
+        // Execute the user command and wait for completion
         executeCommand(input);
     }
 }
 
+void executeCommand(char *input) {
+    // Create a child process
+    pid_t pid = fork();
+
+    // Check for errors
+    if (pid == -1) {
+        perror("Error: executeCommand\nfork");
+        exit(EXIT_FAILURE);
+    }
+
+    // Parent process
+    else if (pid != 0) {
+        // Parent waits for the child process
+        int status;
+        wait(&status);
+    }
+
+    // Child process
+    else {
+        // Execute the command (without arguments)
+        execlp(input, input, (char*) NULL);
+
+        // If execlp fails, print an error message
+        perror("Error: executeCommand\nexecvp");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+
+// --------------------- Main --------------------- //
 int main() {
     char input[MAX_INPUT_SIZE];
 
-    // Display the welcome message at the beginning
+    // Display the welcome message at launch
     writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
 
     // Main loop
