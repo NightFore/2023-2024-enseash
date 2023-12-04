@@ -38,13 +38,13 @@ void executeCommand(char *input) {
         exit(EXIT_FAILURE);
     }
 
-        // Parent process code
+    // Parent process code
     else if (pid != 0) {
         int status;
         wait(&status);
     }
 
-        // Child process code
+    // Child process code
     else {
         // Execute the command using execl
         // The "/bin/sh" is the path to the system shell
@@ -73,7 +73,7 @@ int main() {
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
-        // Check the user input for specific commands
+        // Execute the user command
         executeCommand(input);
     }
 
