@@ -14,13 +14,13 @@
 - Return to the prompt immediatly with `&` (execution of programs in the background)
 
 ## Project Structure
-- 'TP1_**_question number and description_**/' : Contain the .c file and the executing program
+- TP1_**_question number and description_**/ : Contain the .c file and the executing program
 
 ## Operationg Instructions
 1. Clone this repository on your machine
 2. Place yourself in the right directory
 3. If the executing program is missing or not compatible :
-   - Compile the program (with gcc for example) : gcc `program_name.c -o executing_program_name`
+   - Compile the program (with gcc for example) : `gcc program_name.c -o executing_program_name`
    - Execute program : `./executing_program_name`
 
 ## Results
