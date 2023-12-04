@@ -75,6 +75,15 @@ void processUserInput(char *input, ssize_t bytesRead) {
     }
 }
 
+void writeExitOrSignalMessage(char *command, int status) {
+    // Create a prompt message with the specified command and status
+    char promptMessage[100];
+    snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d] %% ", command, status);
+
+    // Write the prompt message to the standard output
+    writeMessage(promptMessage);
+}
+
 void displayPromptStatus() {
     int status;
 
@@ -84,13 +93,13 @@ void displayPromptStatus() {
     // Check if the command was successful
     if (WIFEXITED(status)) {
         // Display exit status in the prompt
-        printf("enseash [exit:%d] %% \n", WEXITSTATUS(status));
+        writeExitOrSignalMessage("exit", WEXITSTATUS(status));
     } else if (WIFSIGNALED(status)) {
         // Display signal information in the prompt
-        printf("enseash [sign:%d] %% \n", WTERMSIG(status));
+        writeExitOrSignalMessage("sign", WTERMSIG(status));
     } else {
-        // Display default prompt
-        printf("enseash %% \n");
+        // Display error prompt
+        writeMessage("Error: displayPromptStatus\nenseash % ");
     }
 }
 
@@ -105,7 +114,6 @@ int main() {
 
     // Main loop
     while (1) {
-
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
