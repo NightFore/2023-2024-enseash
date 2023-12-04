@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #define MAX_INPUT_SIZE 100
@@ -12,20 +13,20 @@
 
 // Helper Functions
 void writeMessage(const char *message);
-void writeExitOrSignalMessage(char *command, int status);
+void writeStatusMessage(char *command, int status, long executionTime);
 
 // Read Input
 ssize_t readPrompt(char *input, size_t size);
 
 // Process Input
-void processUserInput(char *input, ssize_t bytesRead);
-void executeCommand(char *input);
+void processUserInput(char *input, ssize_t bytesRead, int *status, long *executionTime);
+void executeCommand(char *input, int *status);
 void tokenizeInput(char *input, char *args[], size_t *argCount);
 void handleRedirection(char *args[], size_t argCount);
 void handlePipe(char *args[], size_t argCount);
 
 // Display Status
-void displayPromptStatus();
+void displayPromptStatus(int status, long executionTime);
 
 
 
@@ -35,10 +36,10 @@ void writeMessage(const char *message) {
     write(STDOUT_FILENO, message, strlen(message));
 }
 
-void writeExitOrSignalMessage(char *command, int status) {
-    // Create a prompt message with the specified command and status
+void writeStatusMessage(char *command, int status, long executionTime) {
+    // Create a prompt message with the specified command, status and execution time
     char promptMessage[100];
-    snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d] %% ", command, status);
+    snprintf(promptMessage, sizeof(promptMessage), "enseash [%s:%d|%ldms] %% ", command, status, executionTime);
     writeMessage(promptMessage);
 }
 
@@ -65,7 +66,7 @@ ssize_t readPrompt(char *input, size_t size) {
 
 
 // --------------------- Process Input --------------------- //
-void processUserInput(char *input, ssize_t bytesRead) {
+void processUserInput(char *input, ssize_t bytesRead, int *status, long *executionTime) {
     // Exit the shell with 'exit' command or Ctrl+D
     if (strcmp(input, "exit") == 0 || bytesRead == 0) {
         if (bytesRead == 0) {
@@ -75,13 +76,34 @@ void processUserInput(char *input, ssize_t bytesRead) {
         exit(EXIT_SUCCESS);
     }
 
-    // Execute the user command
+    // User command
     else {
-        executeCommand(input);
+        // Initialize timestamps (time.h)
+        struct timespec start_time, end_time;
+
+        // Get start time
+        if (clock_gettime(CLOCK_MONOTONIC, &start_time) != 0) {
+            perror("Error: processUserInput (Start Time)\nclock_gettime");
+            exit(EXIT_FAILURE);
+        }
+        
+        // Execute the user command and wait for completion
+        executeCommand(input, status);
+
+        // Get the end time
+        if (clock_gettime(CLOCK_MONOTONIC, &end_time) != 0) {
+            perror("Error: processUserInput (End Time)\nclock_gettime");
+            exit(EXIT_FAILURE);
+        }
+
+        // Calculate the execution time in milliseconds
+        long seconds = end_time.tv_sec - start_time.tv_sec;
+        long nanoseconds = end_time.tv_nsec - start_time.tv_nsec;
+        *executionTime = seconds * 1000 + nanoseconds / 1000000;
     }
 }
 
-void executeCommand(char *input) {
+void executeCommand(char *input, int *status) {
     // Create a child process
     pid_t pid = fork();
 
@@ -93,8 +115,8 @@ void executeCommand(char *input) {
 
     // Parent process
     else if (pid != 0) {
-        int status;
-        wait(&status);
+        // Parent waits for the child process
+        wait(status);
     }
 
     // Child process
@@ -269,19 +291,14 @@ void handlePipe(char *args[], size_t argCount) {
 
 
 // --------------------- Display Status --------------------- //
-void displayPromptStatus() {
-    int status;
-
-    // Wait for the child process to finish
-    wait(&status);
-
+void displayPromptStatus(int status, long executionTime) {
     // Check if the command was successful
     if (WIFEXITED(status)) {
-        // Display exit status in the prompt
-        writeExitOrSignalMessage("exit", WEXITSTATUS(status));
+        // If the command exited normally, display exit status in the prompt
+        writeStatusMessage("exit", WEXITSTATUS(status), executionTime);
     } else if (WIFSIGNALED(status)) {
-        // Display signal information in the prompt
-        writeExitOrSignalMessage("sign", WTERMSIG(status));
+        // If the command was terminated by a signal, display signal information in the prompt
+        writeStatusMessage("sign", WTERMSIG(status), executionTime);
     }
 }
 
@@ -290,6 +307,8 @@ void displayPromptStatus() {
 // --------------------- Main --------------------- //
 int main() {
     char input[MAX_INPUT_SIZE];
+    int status;
+    long executionTime;
 
     // Display the welcome message at launch
     writeMessage("Welcome to ENSEA Shell.\nType 'exit' or press 'Ctrl+D' to quit.\n");
@@ -302,11 +321,11 @@ int main() {
         // Read user input
         ssize_t bytesRead = readPrompt(input, sizeof(input));
 
-        // Process user input
-        processUserInput(input, bytesRead);
+        // Process user input and execute the command
+        processUserInput(input, bytesRead, &status, &executionTime);
 
         // Display prompt status
-        displayPromptStatus();
+        displayPromptStatus(status, executionTime);
     }
 
     exit(EXIT_SUCCESS);
