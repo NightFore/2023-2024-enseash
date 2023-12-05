@@ -9,7 +9,7 @@ void displayWelcomeMessage();
 
 // -------------------- Helper Functions -------------------- //
 void displayWelcomeMessage() {
-    const char welcomeMessage[] = "Welcome to ENSEA Tiny Shell.\n"
+    const char welcomeMessage[] = "Welcome to ENSEA Shell.\n"
                                   "Type 'exit' to quit.\n"
                                   "enseash %\n";
 
