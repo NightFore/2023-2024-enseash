@@ -1,5 +1,12 @@
 // TP1_8_pipe_redirection.c
 
+/*
+    Changes from the previous code:
+
+    - Added the `handlePipe` function to manage command piping.
+    - Modified the `executeCommand` function to use the `handlePipe` function.
+*/
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>

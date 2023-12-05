@@ -3,8 +3,8 @@
 /*
     Changes from the previous code:
 
-    - Added a new function processUserInput to handle 'exit' command and Ctrl+D.
-    - Modified the main loop to call processUserInput instead of executeCommand directly.
+    - Added the `processUserInput` function to handle user input and exit commands.
+    - In the main loop, replaced the direct execution of the command with the `processUserInput` function.
 */
 
 #include <stdio.h>

@@ -1,5 +1,14 @@
 // TP1_5_measure_execution_time.c
 
+/*
+    Changes from the previous code:
+
+    - Added the `executionTime` variable to track the execution time of each command.
+    - Used the `clock_gettime` function from the `time.h` library to measure the execution time.
+    - Modified the `writeStatusMessage` function to include the execution time in the shell prompt.
+    - Modified the main loop to display the prompt status along with the execution time.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

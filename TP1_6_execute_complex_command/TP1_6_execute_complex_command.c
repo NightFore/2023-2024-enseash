@@ -1,5 +1,13 @@
 // TP1_6_execute_complex_command.c
 
+/*
+    Changes from the previous code:
+
+    - Introduced the `MAX_ARGS` constant to specify the maximum number of command arguments.
+    - Added the `tokenizeInput` function to split the input string into command and arguments.
+    - Modified the `executeCommand` function to use the `tokenizeInput` function and execute the command with arguments.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

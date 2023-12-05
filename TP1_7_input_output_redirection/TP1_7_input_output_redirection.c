@@ -1,5 +1,13 @@
 // TP1_7_input_output_redirection.c
 
+/*
+    Changes from the previous code:
+    
+    - Added fcntl.h for file control operations.
+    - Added the `handleRedirection` function to manage input and output redirection.
+    - Modified the `handleRedirection` function to use `fcntl` for opening input and output files with appropriate flags and permissions.
+*/
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>

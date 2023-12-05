@@ -1,5 +1,13 @@
 // TP1_4_display_code.c
 
+/*
+    Changes from the previous code:
+
+    - Added the `status` variable to keep track of the execution status of the command.
+    - Added the `displayPromptStatus` function to show the command status in the shell prompt.
+    - Modified the main loop to display the prompt status after processing user input and executing the command.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
